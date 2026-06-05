@@ -10,7 +10,6 @@ def train_and_predict(train_processed, test_processed):
 
     categorical_features = ['geohash', 'RoadType', 'Weather', 'LargeVehicles', 'Landmarks']
 
-
     for col in categorical_features:
         X_train[col] = X_train[col].astype('category')
         X_test[col] = X_test[col].astype('category')
