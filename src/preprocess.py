@@ -19,12 +19,12 @@ def preprocess_traffic_data(df):
     data['is_rush_hour'] = data['hour'].apply(lambda x: 1 if (7 <= x <= 9) or (16 <= x <= 19) else 0)
     data = data.drop(columns=['timestamp'])
     
-    # 2. The TRUE Spatial Frankenstein
+    # 2. True Spatial Frankenstein
     print("Extracting coordinates while keeping native geohash...")
+    data['geohash'] = data['geohash'].astype(str)
     coords = data['geohash'].apply(safe_decode)
     data['latitude'] = [c[0] for c in coords]
     data['longitude'] = [c[1] for c in coords]
-    # We are explicitly keeping 'geohash' for CatBoost's categorical engine!
     
     # 3. Cross-Feature Interactions
     if 'NumberofLanes' in data.columns:

@@ -1,8 +1,12 @@
 import pandas as pd
 from catboost import CatBoostRegressor
 import lightgbm as lgb
+import warnings
+
+warnings.filterwarnings('ignore')
 
 def train_and_predict(train_processed, test_processed):
+    # Standard split, NO log transformation
     X_train = train_processed.drop(columns=['demand', 'Index'])
     y_train = train_processed['demand']
     X_test = test_processed.drop(columns=['Index'])
@@ -11,8 +15,9 @@ def train_and_predict(train_processed, test_processed):
     categorical_features = ['geohash', 'RoadType', 'Weather', 'LargeVehicles', 'Landmarks']
 
     for col in categorical_features:
-        X_train[col] = X_train[col].astype('category')
-        X_test[col] = X_test[col].astype('category')
+        if col in X_train.columns:
+            X_train[col] = X_train[col].astype('category')
+            X_test[col] = X_test[col].astype('category')
 
     # --- CATBOOST ---
     print("Initiating CatBoost training...")
@@ -23,7 +28,7 @@ def train_and_predict(train_processed, test_processed):
         loss_function='RMSE',
         eval_metric='RMSE',
         random_seed=42,
-        verbose=1000  # Less console spam
+        verbose=1000
     )
     cat_model.fit(X_train, y_train, cat_features=categorical_features)
     cat_preds = cat_model.predict(X_test)
@@ -31,8 +36,8 @@ def train_and_predict(train_processed, test_processed):
     # --- LIGHTGBM ---
     print("Initiating LightGBM training...")
     lgb_model = lgb.LGBMRegressor(
-        n_estimators=4000,     # Increased to match CatBoost precision
-        learning_rate=0.01,    # Decreased to force deep learning
+        n_estimators=4000,     
+        learning_rate=0.01,    
         max_depth=8,
         random_state=42
     )
